@@ -14,27 +14,37 @@ enum custom_keycodes {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-/* BASE - Layer 0 (desde VIA JSON)
- * Lily58 tiene 58 teclas: 4 filas de 6 + 2 thumb inner + 4 thumb outer por lado
+/* BASE - Layer 0
+ * ┌──────┬──────┬──────┬──────┬──────┬──────┐                 ┌──────┬──────┬──────┬──────┬──────┬──────┐
+ * │  @   │  %   │  [   │  ]   │  '   │  |   │                 │  .   │  ;   │  F5  │  F4  │  F2  │  `   │
+ * ├──────┼──────┼──────┼──────┼──────┼──────┤                 ├──────┼──────┼──────┼──────┼──────┼──────┤
+ * │ Tab  │  Q   │  W   │  E   │  R   │  T   │                 │  Y   │  U   │  I   │  O   │  P   │  -   │
+ * ├──────┼──────┼──────┼──────┼──────┼──────┤                 ├──────┼──────┼──────┼──────┼──────┼──────┤
+ * │ Ctrl │  A   │  S   │  D   │  F   │  G   │                 │  H   │  J   │  K   │  L   │  ,   │  =   │
+ * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┐ ┌───────┼──────┼──────┼──────┼──────┼──────┼──────┤
+ * │Shift │  Z   │  X   │  C   │  V   │  B   │Enter │ │ Esc   │  N   │  M   │  Ñ   │  &   │ MO1  │  *   │
+ * └──────┴──────┴──────┼──────┼──────┼──────┼──────┤ ├───────┼──────┼──────┼──────┴──────┴──────┴──────┘
+ *                      │ Win  │  FN  │ Alt  │Space │ │ Bkspc │  /   │  !   │  #   │
+ *                      └──────┴──────┴──────┴──────┘ └───────┴──────┴──────┴──────┘
  */
 [_BASE] = LAYOUT(
-  S(KC_2),  S(KC_5),  KC_LBRC,  KC_RBRC,  KC_QUOT,  S(KC_BSLS),                     KC_GRV,   KC_F2,    KC_F4,    KC_F5,    KC_SCLN,  KC_DOT,
+  S(KC_2),  S(KC_5),  KC_LBRC,  KC_RBRC,  KC_QUOT,  S(KC_BSLS),                     KC_DOT,   KC_SCLN,  KC_F5,    KC_F4,    KC_F2,    KC_GRV,
   KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                           KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_MINS,
   KC_LCTL,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,                           KC_H,     KC_J,     KC_K,     KC_L,     KC_COMM,  KC_EQL,
-  KC_LSFT,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_NO,      MO(1),    KC_N,     KC_M,     KC_NO,    S(KC_7),  S(KC_8),  KC_NO,
-                                KC_LGUI,  MO(2),    KC_LALT,  KC_SPC,     KC_ENT,   KC_BSPC,  KC_SLSH,  KC_ESC
+  KC_LSFT,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_ENT,     KC_ESC,   KC_N,     KC_M,     MC_ENE,   S(KC_7),  MO(1),    S(KC_8),
+                                KC_LGUI,  MO(2),    KC_LALT,  KC_SPC,     KC_BSPC,  KC_SLSH,  S(KC_1),  S(KC_3)
 ),
 
-/* LAYER1 - Simbolos */
+/* LAYER1 - Simbolos (MO1) */
 [_LAYER1] = LAYOUT(
-  KC_NO,    KC_NO,    S(KC_9),  S(KC_0),  KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_G,
+  KC_NO,    KC_NO,    S(KC_9),  S(KC_0),  KC_NO,    KC_NO,                          KC_G,     KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_BSLS,  S(KC_4),  S(KC_6),  KC_JYEN,  KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
                                 KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO
 ),
 
-/* LAYER2 - F-keys y navegacion */
+/* LAYER2 - F-keys y navegacion (FN) */
 [_LAYER2] = LAYOUT(
   _______,  _______,  _______,  _______,  _______,  _______,                        _______,  _______,  _______,  _______,  _______,  _______,
   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,                          KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,
