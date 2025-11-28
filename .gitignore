@@ -1,0 +1,15 @@
+# Notas privadas (contiene info sensible)
+CLAUDE_NOTES.md
+
+# Build artifacts
+*.uf2
+*.hex
+*.bin
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

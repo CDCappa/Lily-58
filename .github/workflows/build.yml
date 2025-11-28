@@ -1,0 +1,52 @@
+name: Build QMK Firmware
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'keymaps/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Permite ejecutar manualmente
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup QMK
+      uses: qmk/qmk_firmware/.github/actions/setup@master
+
+    - name: Checkout QMK Firmware
+      uses: actions/checkout@v4
+      with:
+        repository: qmk/qmk_firmware
+        path: qmk_firmware
+        submodules: recursive
+
+    - name: Copy keymap to QMK
+      run: |
+        mkdir -p qmk_firmware/keyboards/lily58/keymaps/ergomech_custom
+        cp -r keymaps/ergomech_custom/* qmk_firmware/keyboards/lily58/keymaps/ergomech_custom/
+
+    - name: Build firmware for RP2040
+      run: |
+        cd qmk_firmware
+        qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce
+
+    - name: Rename firmware file
+      run: |
+        cd qmk_firmware
+        mv lily58_rev1_ergomech_custom_rp2040_ce.uf2 ../lily58_ergomech_rp2040.uf2 || true
+
+    - name: Upload firmware
+      uses: actions/upload-artifact@v4
+      with:
+        name: lily58-firmware
+        path: |
+          lily58_ergomech_rp2040.uf2
+        if-no-files-found: error
