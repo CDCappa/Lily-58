@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lily58 Keymap Editor</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { text-align: center; color: #00d9ff; }
+        .layer-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .layer-tab {
+            padding: 10px 20px;
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #eee;
+            font-weight: bold;
+        }
+        .layer-tab.active {
+            background: #0f3460;
+            border-color: #00d9ff;
+            color: #00d9ff;
+        }
+        .keyboard {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin: 20px 0;
+        }
+        .half {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .row {
+            display: flex;
+            gap: 4px;
+        }
+        .thumb-row {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+        .half.right .thumb-row {
+            justify-content: flex-start;
+        }
+        .key {
+            width: 55px;
+            height: 45px;
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            padding: 2px;
+            word-break: break-all;
+        }
+        .key:hover {
+            background: #0f3460;
+            border-color: #00d9ff;
+        }
+        .key.selected {
+            background: #00d9ff;
+            color: #1a1a2e;
+            border-color: #fff;
+        }
+        .key.special { background: #2d132c; }
+        .key.modifier { background: #1e5128; }
+        .key.layer { background: #4a0e0e; }
+        .key.empty { background: #333; opacity: 0.5; }
+
+        .editor-panel {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .editor-panel h3 { margin-top: 0; color: #00d9ff; }
+        .key-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .key-option {
+            padding: 8px 12px;
+            background: #0f3460;
+            border: 1px solid #1a1a2e;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .key-option:hover { background: #00d9ff; color: #1a1a2e; }
+        .category { margin-bottom: 15px; }
+        .category-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        #output {
+            width: 100%;
+            height: 200px;
+            background: #0a0a15;
+            border: 1px solid #0f3460;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .btn:hover { background: #00b8d9; }
+        .btn-secondary { background: #0f3460; color: #eee; }
+        .buttons { text-align: center; margin-top: 15px; }
+        .instructions {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .instructions code {
+            background: #1a1a2e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #00d9ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lily58 Keymap Editor</h1>
+
+    <div class="instructions">
+        <strong>Instrucciones:</strong> Click en una tecla para seleccionarla, luego click en el valor deseado abajo.
+        Cuando termines, copia el output y pegalo en el chat con Claude.
+    </div>
+
+    <div class="layer-tabs">
+        <div class="layer-tab active" onclick="switchLayer(0)">Layer 0 - BASE</div>
+        <div class="layer-tab" onclick="switchLayer(1)">Layer 1 - SYMBOLS</div>
+        <div class="layer-tab" onclick="switchLayer(2)">Layer 2 - FN/NAV</div>
+        <div class="layer-tab" onclick="switchLayer(3)">Layer 3 - ADJUST</div>
+    </div>
+
+    <div class="keyboard">
+        <div class="half left" id="left-half"></div>
+        <div class="half right" id="right-half"></div>
+    </div>
+
+    <div class="editor-panel">
+        <h3>Selecciona un valor para la tecla: <span id="selected-key-name">ninguna</span></h3>
+
+        <div class="category">
+            <div class="category-title">Letras</div>
+            <div class="key-options" id="letters"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">Números</div>
+            <div class="key-options" id="numbers"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">Símbolos</div>
+            <div class="key-options" id="symbols"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">Modificadores</div>
+            <div class="key-options" id="modifiers"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">Navegación</div>
+            <div class="key-options" id="navigation"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">F-Keys</div>
+            <div class="key-options" id="fkeys"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">Layers & Especiales</div>
+            <div class="key-options" id="special"></div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">Media</div>
+            <div class="key-options" id="media"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="generateOutput()">Generar Output para Claude</button>
+            <button class="btn btn-secondary" onclick="copyOutput()">Copiar al Portapapeles</button>
+        </div>
+
+        <textarea id="output" readonly placeholder="El output aparecerá aquí..."></textarea>
+    </div>
+
+    <script>
+        // Keycodes disponibles
+        const keycodes = {
+            letters: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+            numbers: ['1','2','3','4','5','6','7','8','9','0'],
+            symbols: ['!','@','#','$','%','^','&','*','(',')','[',']','{','}','-','_','=','+','\\','|',';',':','"',"'",'`','~',',','<','.','>','/','?','Ñ','Ñ!'],
+            modifiers: ['CTL','SFT','ALT','WIN','TAB','ENT','SPC','BSP','DEL','ESC'],
+            navigation: ['←','↓','↑','→','HOME','END','PGUP','PGDN'],
+            fkeys: ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'],
+            special: ['_','▼','MO1','MO2','FN','TG1','TG2','RST'],
+            media: ['V+','V-','MUT','▶','◄◄','►►']
+        };
+
+        // Layout inicial (4 layers x 58 teclas)
+        let layers = [
+            // Layer 0 - BASE (tu layout actual)
+            ['@','%','[',']',"'",'|','.', ';','F5','F4','F2','`',
+             'TAB','Q','W','E','R','T','Y','U','I','O','P','-',
+             'CTL','A','S','D','F','G','H','J','K','L',',','=',
+             'SFT','Z','X','C','V','B','ENT','ESC','N','M','Ñ','&','MO1','*',
+             'WIN','FN','ALT','SPC','BSP','/','/','#'],
+            // Layer 1 - SYMBOLS
+            ['_','_','(',')','_','_','G','_','_','_','_','_',
+             '_','\\','$','^','_','_','_','_','_','_','_','_',
+             '_','_','_','_','_','_','_','_','_','_','_','_',
+             '_','_','_','_','_','_','_','_','_','_','_','_','_','_',
+             '_','_','_','_','_','_','_','_'],
+            // Layer 2 - FN/NAV
+            ['▼','▼','▼','▼','▼','▼','▼','▼','▼','▼','▼','▼',
+             'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
+             '▼','▼','▼','▼','▼','▼','_','←','↓','↑','→','_',
+             '▼','▼','▼','▼','▼','▼','_','\\','+','=','[',']','\\','_',
+             '▼','▼','▼','▼','▼','▼','▼','▼'],
+            // Layer 3 - ADJUST
+            ['RST','_','_','_','_','_','_','_','_','_','_','_',
+             '_','_','_','_','_','_','_','_','_','_','_','_',
+             '_','_','_','_','_','_','_','V-','V+','MUT','_','_',
+             '_','_','_','_','_','_','_','_','Ñ','◄◄','▶','►►','Ñ!','_',
+             '▼','▼','▼','▼','▼','▼','▼','▼']
+        ];
+
+        let currentLayer = 0;
+        let selectedKeyIndex = null;
+
+        // Estructura del teclado (índices)
+        const leftRows = [
+            [0,1,2,3,4,5],
+            [12,13,14,15,16,17],
+            [24,25,26,27,28,29],
+            [36,37,38,39,40,41,42]
+        ];
+        const rightRows = [
+            [6,7,8,9,10,11],
+            [18,19,20,21,22,23],
+            [30,31,32,33,34,35],
+            [43,44,45,46,47,48,49]
+        ];
+        const leftThumbs = [50,51,52,53];
+        const rightThumbs = [54,55,56,57];
+
+        function getKeyClass(value) {
+            if (value === '_') return 'empty';
+            if (value === '▼') return 'special';
+            if (['CTL','SFT','ALT','WIN'].includes(value)) return 'modifier';
+            if (['MO1','MO2','FN','TG1','TG2','RST'].includes(value)) return 'layer';
+            return '';
+        }
+
+        function renderKeyboard() {
+            const leftHalf = document.getElementById('left-half');
+            const rightHalf = document.getElementById('right-half');
+            leftHalf.innerHTML = '';
+            rightHalf.innerHTML = '';
+
+            // Left rows
+            leftRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+                row.forEach(idx => {
+                    const key = document.createElement('div');
+                    key.className = `key ${getKeyClass(layers[currentLayer][idx])} ${selectedKeyIndex === idx ? 'selected' : ''}`;
+                    key.textContent = layers[currentLayer][idx];
+                    key.onclick = () => selectKey(idx);
+                    rowDiv.appendChild(key);
+                });
+                leftHalf.appendChild(rowDiv);
+            });
+
+            // Left thumbs
+            const leftThumbDiv = document.createElement('div');
+            leftThumbDiv.className = 'thumb-row';
+            leftThumbs.forEach(idx => {
+                const key = document.createElement('div');
+                key.className = `key ${getKeyClass(layers[currentLayer][idx])} ${selectedKeyIndex === idx ? 'selected' : ''}`;
+                key.textContent = layers[currentLayer][idx];
+                key.onclick = () => selectKey(idx);
+                leftThumbDiv.appendChild(key);
+            });
+            leftHalf.appendChild(leftThumbDiv);
+
+            // Right rows
+            rightRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+                row.forEach(idx => {
+                    const key = document.createElement('div');
+                    key.className = `key ${getKeyClass(layers[currentLayer][idx])} ${selectedKeyIndex === idx ? 'selected' : ''}`;
+                    key.textContent = layers[currentLayer][idx];
+                    key.onclick = () => selectKey(idx);
+                    rowDiv.appendChild(key);
+                });
+                rightHalf.appendChild(rowDiv);
+            });
+
+            // Right thumbs
+            const rightThumbDiv = document.createElement('div');
+            rightThumbDiv.className = 'thumb-row';
+            rightThumbs.forEach(idx => {
+                const key = document.createElement('div');
+                key.className = `key ${getKeyClass(layers[currentLayer][idx])} ${selectedKeyIndex === idx ? 'selected' : ''}`;
+                key.textContent = layers[currentLayer][idx];
+                key.onclick = () => selectKey(idx);
+                rightThumbDiv.appendChild(key);
+            });
+            rightHalf.appendChild(rightThumbDiv);
+        }
+
+        function renderOptions() {
+            for (const [category, keys] of Object.entries(keycodes)) {
+                const container = document.getElementById(category);
+                container.innerHTML = '';
+                keys.forEach(key => {
+                    const option = document.createElement('div');
+                    option.className = 'key-option';
+                    option.textContent = key;
+                    option.onclick = () => setKeyValue(key);
+                    container.appendChild(option);
+                });
+            }
+        }
+
+        function selectKey(idx) {
+            selectedKeyIndex = idx;
+            document.getElementById('selected-key-name').textContent = `Posición ${idx} (${layers[currentLayer][idx]})`;
+            renderKeyboard();
+        }
+
+        function setKeyValue(value) {
+            if (selectedKeyIndex !== null) {
+                layers[currentLayer][selectedKeyIndex] = value;
+                renderKeyboard();
+            }
+        }
+
+        function switchLayer(layerNum) {
+            currentLayer = layerNum;
+            selectedKeyIndex = null;
+            document.querySelectorAll('.layer-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === layerNum);
+            });
+            document.getElementById('selected-key-name').textContent = 'ninguna';
+            renderKeyboard();
+        }
+
+        function generateOutput() {
+            const layerNames = ['BASE', 'SYMBOLS', 'FN/NAV', 'ADJUST'];
+            let output = '=== KEYMAP CONFIG ===\n\n';
+
+            layers.forEach((layer, i) => {
+                output += `[LAYER_${i} - ${layerNames[i]}]\n`;
+                output += `R1: ${layer.slice(0,6).join(' | ')}  ||  ${layer.slice(6,12).join(' | ')}\n`;
+                output += `R2: ${layer.slice(12,18).join(' | ')}  ||  ${layer.slice(18,24).join(' | ')}\n`;
+                output += `R3: ${layer.slice(24,30).join(' | ')}  ||  ${layer.slice(30,36).join(' | ')}\n`;
+                output += `R4: ${layer.slice(36,43).join(' | ')}  ||  ${layer.slice(43,50).join(' | ')}\n`;
+                output += `TH: ${layer.slice(50,54).join(' | ')}  ||  ${layer.slice(54,58).join(' | ')}\n\n`;
+            });
+
+            document.getElementById('output').value = output;
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('output');
+            output.select();
+            document.execCommand('copy');
+            alert('Copiado al portapapeles!');
+        }
+
+        // Init
+        renderKeyboard();
+        renderOptions();
+    </script>
+</body>
+</html>

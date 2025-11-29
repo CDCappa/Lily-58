@@ -14,19 +14,7 @@ enum custom_keycodes {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-/* BASE - Layer 0
- * ┌──────┬──────┬──────┬──────┬──────┬──────┐                 ┌──────┬──────┬──────┬──────┬──────┬──────┐
- * │  @   │  %   │  [   │  ]   │  '   │  |   │                 │  .   │  ;   │  F5  │  F4  │  F2  │  `   │
- * ├──────┼──────┼──────┼──────┼──────┼──────┤                 ├──────┼──────┼──────┼──────┼──────┼──────┤
- * │ Tab  │  Q   │  W   │  E   │  R   │  T   │                 │  Y   │  U   │  I   │  O   │  P   │  -   │
- * ├──────┼──────┼──────┼──────┼──────┼──────┤                 ├──────┼──────┼──────┼──────┼──────┼──────┤
- * │ Ctrl │  A   │  S   │  D   │  F   │  G   │                 │  H   │  J   │  K   │  L   │  ,   │  =   │
- * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┐ ┌───────┼──────┼──────┼──────┼──────┼──────┼──────┤
- * │Shift │  Z   │  X   │  C   │  V   │  B   │Enter │ │ Esc   │  N   │  M   │  Ñ   │  &   │ MO1  │  *   │
- * └──────┴──────┴──────┼──────┼──────┼──────┼──────┤ ├───────┼──────┼──────┼──────┴──────┴──────┴──────┘
- *                      │ Win  │  FN  │ Alt  │Space │ │ Bkspc │  /   │  !   │  #   │
- *                      └──────┴──────┴──────┴──────┘ └───────┴──────┴──────┴──────┘
- */
+/* BASE - Layer 0 */
 [_BASE] = LAYOUT(
   S(KC_2),  S(KC_5),  KC_LBRC,  KC_RBRC,  KC_QUOT,  S(KC_BSLS),                     KC_DOT,   KC_SCLN,  KC_F5,    KC_F4,    KC_F2,    KC_GRV,
   KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                           KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_MINS,
@@ -37,29 +25,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* LAYER1 - Simbolos (MO1) */
 [_LAYER1] = LAYOUT(
-  KC_NO,    KC_NO,    S(KC_9),  S(KC_0),  KC_NO,    KC_NO,                          KC_G,     KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
-  KC_NO,    KC_BSLS,  S(KC_4),  S(KC_6),  KC_NO,  KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
                                 KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO
 ),
 
-/* LAYER2 - F-keys y navegacion (FN) */
+/* LAYER2 - FN */
 [_LAYER2] = LAYOUT(
-  _______,  _______,  _______,  _______,  _______,  _______,                        _______,  _______,  _______,  _______,  _______,  _______,
-  KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,                          KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,
-  _______,  _______,  _______,  _______,  _______,  _______,                        KC_NO,    KC_LEFT,  KC_DOWN,  KC_UP,    KC_RGHT,  KC_NO,
-  _______,  _______,  _______,  _______,  _______,  _______,  KC_NO,      KC_BSLS,  S(KC_EQL),KC_EQL,   KC_LBRC,  KC_RBRC,  KC_BSLS,  KC_NO,
-                                _______,  _______,  _______,  _______,    _______,  _______,  _______,  _______
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+                                KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO
 ),
 
 /* ADJUST - Layer1 + Layer2 */
 [_ADJUST] = LAYOUT(
-  QK_BOOT,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
-  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_VOLD,  KC_VOLU,  KC_MUTE,  KC_NO,    KC_NO,
-  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    MC_ENE,   KC_MPRV,  KC_MPLY,  KC_MNXT,  MC_ENEM,  KC_NO,
-                                _______,  _______,  _______,  _______,    _______,  _______,  _______,  _______
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+                                KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO
 )
 };
 
