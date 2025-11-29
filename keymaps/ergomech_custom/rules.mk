@@ -1,6 +1,9 @@
 # Habilitar OLED
 OLED_ENABLE = yes
 
+# Tap Dance
+TAP_DANCE_ENABLE = yes
+
 # Optimizacion de tamanio
 LTO_ENABLE = yes
 
