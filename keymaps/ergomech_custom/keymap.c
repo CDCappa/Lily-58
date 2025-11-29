@@ -10,6 +10,7 @@ enum layers {
 enum custom_keycodes {
     MC_ENE = SAFE_RANGE,
     MC_ENEM,
+    MC_SENT,  // Shift+Enter
 };
 
 // Tap Dance declarations
@@ -18,67 +19,43 @@ enum {
     TD_RPRN,  // ) } ]
 };
 
-// Tap Dance definitions
+// Tap Dance definitions - using tap_code to avoid key repeat on hold
 void td_lprn_finished(tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (state->pressed) {
-            // Hold = [
-            register_code(KC_LBRC);
+            // Hold = [ (single tap, no repeat)
+            tap_code(KC_LBRC);
         } else {
             // Single tap = (
-            register_code(KC_LSFT);
-            register_code(KC_9);
+            tap_code16(S(KC_9));
         }
     } else if (state->count == 2) {
         // Double tap = {
-        register_code(KC_LSFT);
-        register_code(KC_LBRC);
+        tap_code16(S(KC_LBRC));
     }
 }
 
 void td_lprn_reset(tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1) {
-        if (state->pressed) {
-            unregister_code(KC_LBRC);
-        } else {
-            unregister_code(KC_9);
-            unregister_code(KC_LSFT);
-        }
-    } else if (state->count == 2) {
-        unregister_code(KC_LBRC);
-        unregister_code(KC_LSFT);
-    }
+    // Nothing to unregister since we use tap_code
 }
 
 void td_rprn_finished(tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (state->pressed) {
-            // Hold = ]
-            register_code(KC_RBRC);
+            // Hold = ] (single tap, no repeat)
+            tap_code(KC_RBRC);
         } else {
             // Single tap = )
-            register_code(KC_LSFT);
-            register_code(KC_0);
+            tap_code16(S(KC_0));
         }
     } else if (state->count == 2) {
         // Double tap = }
-        register_code(KC_LSFT);
-        register_code(KC_RBRC);
+        tap_code16(S(KC_RBRC));
     }
 }
 
 void td_rprn_reset(tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1) {
-        if (state->pressed) {
-            unregister_code(KC_RBRC);
-        } else {
-            unregister_code(KC_0);
-            unregister_code(KC_LSFT);
-        }
-    } else if (state->count == 2) {
-        unregister_code(KC_RBRC);
-        unregister_code(KC_LSFT);
-    }
+    // Nothing to unregister since we use tap_code
 }
 
 tap_dance_action_t tap_dance_actions[] = {
@@ -94,7 +71,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                           KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_MINS,
   KC_LCTL,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,                           KC_H,     KC_J,     KC_K,     KC_L,     KC_COMM,  KC_EQL,
   KC_LSFT,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_ENT,     KC_ESC,   KC_N,     KC_M,     MC_ENE,   S(KC_7),  MO(1),    S(KC_8),
-                                KC_LGUI,  MO(2),    KC_LALT,  KC_SPC,     KC_BSPC,  KC_SLSH,  S(KC_1),  S(KC_3)
+                                KC_LGUI,  KC_RALT,  KC_LALT,  KC_SPC,     KC_BSPC,  KC_SLSH,  S(KC_1),  S(KC_3)
 ),
 
 /* LAYER1 - Simbolos (MO1) */
@@ -102,8 +79,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,                          KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,
   KC_TAB,   KC_NO,    KC_UP,    KC_NO,    KC_NO,    KC_NO,                          S(KC_7),  S(KC_6),  KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_LCTL,  KC_LEFT,  KC_DOWN,  KC_RGHT,  KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
-  KC_LSFT,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_ENT,     KC_ESC,   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
-                                KC_NO,    KC_NO,    KC_LALT,  KC_SPC,     KC_BSPC,  KC_NO,    KC_NO,    KC_NO
+  KC_LSFT,  KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    MC_SENT,    KC_ESC,   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
+                                KC_NO,    KC_NO,    KC_LALT,  KC_SPC,     KC_DEL,   KC_NO,    KC_NO,    KC_NO
 ),
 
 /* LAYER2 - FN */
@@ -145,6 +122,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 tap_code(KC_N);
                 unregister_code(KC_RALT);
                 unregister_code(KC_RSFT);
+            }
+            return false;
+        case MC_SENT:
+            if (record->event.pressed) {
+                // Shift+Enter - soft line break
+                tap_code16(S(KC_ENT));
             }
             return false;
     }
