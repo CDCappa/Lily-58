@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "skull_anim.h"
 
 enum layers {
     _BASE = 0,
@@ -120,17 +121,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 #ifdef OLED_ENABLE
 bool oled_task_user(void) {
-    // Solo mostrar en el master, slave no hace nada
-    if (!is_keyboard_master()) {
-        return false;
-    }
-    
-    oled_write_P(PSTR("Layer: "), false);
-    switch (get_highest_layer(layer_state)) {
-        case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
-        case _LAYER1:  oled_write_ln_P(PSTR("SYMBOLS"), false); break;
-        case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
-        case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
+    if (is_keyboard_master()) {
+        // Master (derecho): layer info
+        oled_write_P(PSTR("Layer: "), false);
+        switch (get_highest_layer(layer_state)) {
+            case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
+            case _LAYER1:  oled_write_ln_P(PSTR("SYMBOLS"), false); break;
+            case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
+            case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
+        }
+    } else {
+        // Slave (izquierdo): craneo estatico
+        oled_write_raw_P(skull_frame_0, SKULL_FRAME_SIZE);
     }
     return false;
 }
