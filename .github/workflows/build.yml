@@ -28,7 +28,7 @@ jobs:
         mkdir -p qmk_firmware/keyboards/lily58/keymaps/ergomech_custom
         cp -r keymaps/ergomech_custom/* qmk_firmware/keyboards/lily58/keymaps/ergomech_custom/
 
-    - name: Build firmware for RP2040
+    - name: Build firmware
       run: |
         cd qmk_firmware
         qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce
@@ -36,6 +36,6 @@ jobs:
     - name: Upload firmware
       uses: actions/upload-artifact@v4
       with:
-        name: lily58-firmware-flash-both-modules
+        name: lily58-firmware
         path: qmk_firmware/*.uf2
         if-no-files-found: error
