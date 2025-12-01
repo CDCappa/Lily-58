@@ -149,11 +149,8 @@ static void render_status(void) {
 }
 
 bool oled_task_user(void) {
-    if (is_keyboard_master()) {
-        render_status();
-    } else {
-        render_skull();
-    }
+    // Debug: mostrar craneo en AMBOS lados
+    render_skull();
     return false;
 }
 #endif
