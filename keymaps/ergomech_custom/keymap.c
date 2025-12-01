@@ -134,8 +134,19 @@ bool oled_task_user(void) {
             case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
         }
     } else {
-        // Slave (izquierdo): craneo animado
-        if (timer_elapsed32(anim_timer) > 150) {
+        // Slave (izquierdo): craneo animado segun WPM
+        uint8_t wpm = get_current_wpm();
+        uint16_t frame_delay;
+        
+        if (wpm == 0) {
+            frame_delay = 500;  // Lento cuando no tipea
+        } else if (wpm > 80) {
+            frame_delay = 50;   // Muy rapido
+        } else {
+            frame_delay = 500 - (wpm * 5);  // Escala lineal
+        }
+        
+        if (timer_elapsed32(anim_timer) > frame_delay) {
             anim_timer = timer_read32();
             current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
         }
