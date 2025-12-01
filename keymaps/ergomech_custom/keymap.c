@@ -132,30 +132,34 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 static void render_skull(void) {
     uint8_t current_wpm = get_current_wpm();
     
-    // Si no hay tipeo, mostrar frame 0 estatico
-    if (current_wpm == 0) {
-        oled_write_raw_P(skull_frames[0], SKULL_FRAME_SIZE);
-        return;
-    }
-    
-    // Velocidad de animacion basada en WPM
-    // WPM bajo (10) = 500ms entre frames
-    // WPM alto (100+) = 50ms entre frames
+    // Calcular velocidad de animacion
     uint16_t frame_delay;
-    if (current_wpm < 10) {
+    if (current_wpm == 0) {
+        frame_delay = 0;
+    } else if (current_wpm < 10) {
         frame_delay = 500;
     } else if (current_wpm > 100) {
         frame_delay = 50;
     } else {
-        // Interpolacion lineal: 500ms a 10wpm, 50ms a 100wpm
         frame_delay = 500 - ((current_wpm - 10) * 5);
     }
     
-    if (timer_elapsed32(anim_timer) > frame_delay) {
+    if (current_wpm > 0 && timer_elapsed32(anim_timer) > frame_delay) {
         anim_timer = timer_read32();
         current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
     }
+    
+    // PRIMERO dibujar el craneo (raw sobrescribe todo)
     oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
+    
+    // LUEGO escribir texto encima (sobrescribe partes del raw)
+    // "WPM" arriba
+    oled_set_cursor(0, 0);
+    oled_write_P(PSTR("WPM"), false);
+    
+    // Numero abajo
+    oled_set_cursor(0, 3);
+    oled_write(get_u8_str(current_wpm, ' '), false);
 }
 
 static void render_status(void) {
