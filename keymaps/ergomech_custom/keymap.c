@@ -135,7 +135,7 @@ static void render_skull(void) {
     // Velocidad de animacion basada en WPM
     uint16_t frame_delay;
     if (current_wpm == 0) {
-        frame_delay = 0;  // No animar
+        frame_delay = 0;
     } else if (current_wpm < 10) {
         frame_delay = 500;
     } else if (current_wpm > 100) {
@@ -144,13 +144,20 @@ static void render_skull(void) {
         frame_delay = 500 - ((current_wpm - 10) * 5);
     }
     
-    // Actualizar frame si hay tipeo
     if (current_wpm > 0 && timer_elapsed32(anim_timer) > frame_delay) {
         anim_timer = timer_read32();
         current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
     }
     
+    // Primero el craneo
     oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
+    
+    // Texto encima
+    oled_set_cursor(0, 0);
+    oled_write_P(PSTR("WPM"), false);
+    
+    oled_set_cursor(0, 3);
+    oled_write(get_u8_str(current_wpm, ' '), false);
 }
 
 /*
