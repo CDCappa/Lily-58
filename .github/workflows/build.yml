@@ -31,13 +31,13 @@ jobs:
     - name: Build firmware for LEFT side (slave)
       run: |
         cd qmk_firmware
-        qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce -bl uf2-split-left
+        make lily58/rev1:ergomech_custom:uf2-split-left CONVERT_TO=rp2040_ce
         mv *.uf2 lily58_LEFT.uf2
 
     - name: Build firmware for RIGHT side (master)
       run: |
         cd qmk_firmware
-        qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce -bl uf2-split-right
+        make lily58/rev1:ergomech_custom:uf2-split-right CONVERT_TO=rp2040_ce
         mv *.uf2 lily58_RIGHT.uf2
 
     - name: Upload LEFT firmware
