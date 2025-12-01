@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "skull_anim.h"
+#include "wpm_graphics.h"
 
 enum layers {
     _BASE = 0,
@@ -129,10 +130,23 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return rotation;
 }
 
+// Dibujar imagen en posicion especifica del buffer OLED
+static void draw_raw_at(const char* data, uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+    for (uint8_t i = 0; i < height / 8; i++) {
+        for (uint8_t j = 0; j < width; j++) {
+            uint8_t byte_idx = i * width + j;
+            uint8_t target_x = x + j;
+            uint8_t target_page = y / 8 + i;
+            if (target_x < 128 && target_page < 4) {
+                oled_write_raw_byte(pgm_read_byte(&data[byte_idx]), target_page * 128 + target_x);
+            }
+        }
+    }
+}
+
 static void render_skull(void) {
     uint8_t current_wpm = get_current_wpm();
     
-    // Velocidad de animacion basada en WPM
     uint16_t frame_delay;
     if (current_wpm == 0) {
         frame_delay = 0;
@@ -149,15 +163,27 @@ static void render_skull(void) {
         current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
     }
     
-    // Primero el craneo
+    // Craneo en el centro (offset para centrar 128-32=96, 96/2=48)
     oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
     
-    // Texto encima
-    oled_set_cursor(0, 0);
-    oled_write_P(PSTR("WPM"), false);
+    // WPM label a la izquierda (arriba en visual vertical)
+    draw_raw_at(wpm_label, 0, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
     
-    oled_set_cursor(0, 3);
-    oled_write(get_u8_str(current_wpm, ' '), false);
+    // Numeros a la derecha (abajo en visual vertical)
+    uint8_t wpm = current_wpm;
+    uint8_t x_pos = 128 - NUM_WIDTH;  // Empezar desde la derecha
+    
+    // Dibujar digitos de derecha a izquierda
+    if (wpm == 0) {
+        draw_raw_at(numbers[0], x_pos, 4, NUM_WIDTH, NUM_HEIGHT);
+    } else {
+        while (wpm > 0 && x_pos >= (128 - NUM_WIDTH * 3)) {
+            uint8_t digit = wpm % 10;
+            draw_raw_at(numbers[digit], x_pos, 4, NUM_WIDTH, NUM_HEIGHT);
+            x_pos -= NUM_WIDTH;
+            wpm /= 10;
+        }
+    }
 }
 
 /*
