@@ -166,14 +166,13 @@ static void render_skull(void) {
     // Craneo en el centro (offset para centrar 128-32=96, 96/2=48)
     oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
     
-    // WPM label a la izquierda (arriba en visual vertical)
-    draw_raw_at(wpm_label, 0, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
-    
-    // Numeros a la derecha (abajo en visual vertical)
-    // Los numeros van apilados verticalmente (en la pantalla rotada)
+    // Numeros a la izquierda (arriba en visual vertical)
     uint8_t wpm = current_wpm;
-    uint8_t y_pos = 32 - NUM_HEIGHT;  // Empezar desde abajo
-    uint8_t x_num = 128 - NUM_WIDTH;  // Posicion X fija a la derecha
+    uint8_t y_pos = NUM_HEIGHT * 2;  // Empezar desde arriba, espacio para 3 digitos
+    uint8_t x_num = 0;  // Posicion X fija a la izquierda
+    
+    // WPM label a la derecha (abajo en visual vertical)
+    draw_raw_at(wpm_label, 128 - WPM_LABEL_WIDTH, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
     
     // Dibujar digitos de abajo a arriba
     if (wpm == 0) {
