@@ -121,8 +121,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef OLED_ENABLE
-static uint8_t current_frame = 0;
-static uint32_t anim_timer = 0;
+// static uint8_t current_frame = 0;
+// static uint32_t anim_timer = 0;
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (!is_keyboard_master()) return OLED_ROTATION_180;
