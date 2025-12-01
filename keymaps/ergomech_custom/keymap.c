@@ -134,6 +134,7 @@ static void render_skull(void) {
     oled_write_raw_P(skull_frames[0], SKULL_FRAME_SIZE);
 }
 
+/*
 static void render_status(void) {
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
@@ -142,11 +143,10 @@ static void render_status(void) {
         case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
         case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
     }
-    
-    // Mostrar WPM
     oled_write_P(PSTR("WPM: "), false);
     oled_write(get_u8_str(get_current_wpm(), ' '), false);
 }
+*/
 
 bool oled_task_user(void) {
     // Debug: mostrar craneo en AMBOS lados
