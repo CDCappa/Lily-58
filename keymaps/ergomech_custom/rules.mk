@@ -1,11 +1,8 @@
-# Habilitar OLED
+# OLED solo en master
 OLED_ENABLE = yes
 
 # Tap Dance
 TAP_DANCE_ENABLE = yes
 
-# Optimizacion de tamanio
+# Optimizacion
 LTO_ENABLE = yes
-
-# WPM tracking para animacion
-WPM_ENABLE = yes

@@ -1,6 +1,4 @@
 #include QMK_KEYBOARD_H
-#include "skull_anim.h"
-#include "wpm_graphics.h"
 
 enum layers {
     _BASE = 0,
@@ -12,16 +10,15 @@ enum layers {
 enum custom_keycodes {
     MC_ENE = SAFE_RANGE,
     MC_ENEM,
-    MC_SENT,  // Shift+Enter
+    MC_SENT,
 };
 
 // Tap Dance declarations
 enum {
-    TD_LPRN,  // ( { [
-    TD_RPRN,  // ) } ]
+    TD_LPRN,
+    TD_RPRN,
 };
 
-// Tap Dance definitions - using tap_code to avoid key repeat on hold
 void td_lprn_finished(tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (state->pressed) {
@@ -122,86 +119,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef OLED_ENABLE
-static uint8_t current_frame = 0;
-static uint32_t anim_timer = 0;
-
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    if (!is_keyboard_master()) return OLED_ROTATION_180;
-    return rotation;
-}
-
-// Dibujar imagen en posicion especifica del buffer OLED
-static void draw_raw_at(const char* data, uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
-    for (uint8_t i = 0; i < height / 8; i++) {
-        for (uint8_t j = 0; j < width; j++) {
-            uint8_t byte_idx = i * width + j;
-            uint8_t target_x = x + j;
-            uint8_t target_page = y / 8 + i;
-            if (target_x < 128 && target_page < 4) {
-                oled_write_raw_byte(pgm_read_byte(&data[byte_idx]), target_page * 128 + target_x);
-            }
-        }
-    }
-}
-
-static void render_skull(void) {
-    uint8_t current_wpm = get_current_wpm();
-    
-    uint16_t frame_delay;
-    if (current_wpm == 0) {
-        frame_delay = 0;
-    } else if (current_wpm < 10) {
-        frame_delay = 500;
-    } else if (current_wpm > 100) {
-        frame_delay = 50;
-    } else {
-        frame_delay = 500 - ((current_wpm - 10) * 5);
+bool oled_task_user(void) {
+    // Solo mostrar en el master, slave no hace nada
+    if (!is_keyboard_master()) {
+        return false;
     }
     
-    if (current_wpm > 0 && timer_elapsed32(anim_timer) > frame_delay) {
-        anim_timer = timer_read32();
-        current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
-    }
-    
-    // Craneo en el centro (offset para centrar 128-32=96, 96/2=48)
-    oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
-    
-    // Numeros a la izquierda (arriba en visual vertical)
-    uint8_t wpm = current_wpm;
-    uint8_t y_pos = NUM_HEIGHT * 2;  // Empezar desde arriba, espacio para 3 digitos
-    uint8_t x_num = 0;  // Posicion X fija a la izquierda
-    
-    // WPM label a la derecha (abajo en visual vertical)
-    draw_raw_at(wpm_label, 128 - WPM_LABEL_WIDTH, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
-    
-    // Dibujar digitos de abajo a arriba
-    if (wpm == 0) {
-        draw_raw_at(numbers[0], x_num, y_pos, NUM_WIDTH, NUM_HEIGHT);
-    } else {
-        while (wpm > 0 && y_pos >= 0) {
-            uint8_t digit = wpm % 10;
-            draw_raw_at(numbers[digit], x_num, y_pos, NUM_WIDTH, NUM_HEIGHT);
-            y_pos -= NUM_HEIGHT;
-            wpm /= 10;
-        }
-    }
-}
-
-static void render_status(void) {
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
         case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
         case _LAYER1:  oled_write_ln_P(PSTR("SYMBOLS"), false); break;
         case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
         case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
-    }
-}
-
-bool oled_task_user(void) {
-    if (is_keyboard_master()) {
-        render_status();  // Master (derecho): layer info
-    } else {
-        render_skull();   // Slave (izquierdo): craneo + WPM
     }
     return false;
 }
