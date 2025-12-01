@@ -1,8 +1,7 @@
 #pragma once
 
-// Handedness se define via bootloader (uf2-split-left / uf2-split-right)
-// que graba en EEPROM cual lado es cada modulo
-#define EE_HANDS
+// Detecta automaticamente cual lado tiene USB conectado = master
+#define SPLIT_USB_DETECT
 
 // Tapping term para teclas dual-function
 #define TAPPING_TERM 200
