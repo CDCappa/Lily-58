@@ -9,3 +9,6 @@ LTO_ENABLE = yes
 
 # Si tienes LEDs RGB, descomenta:
 # RGBLIGHT_ENABLE = yes
+
+# WPM tracking para animacion
+WPM_ENABLE = yes

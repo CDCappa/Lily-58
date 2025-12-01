@@ -24,40 +24,30 @@ enum {
 void td_lprn_finished(tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (state->pressed) {
-            // Hold = [ (single tap, no repeat)
             tap_code(KC_LBRC);
         } else {
-            // Single tap = (
             tap_code16(S(KC_9));
         }
     } else if (state->count == 2) {
-        // Double tap = {
         tap_code16(S(KC_LBRC));
     }
 }
 
-void td_lprn_reset(tap_dance_state_t *state, void *user_data) {
-    // Nothing to unregister since we use tap_code
-}
+void td_lprn_reset(tap_dance_state_t *state, void *user_data) {}
 
 void td_rprn_finished(tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (state->pressed) {
-            // Hold = ] (single tap, no repeat)
             tap_code(KC_RBRC);
         } else {
-            // Single tap = )
             tap_code16(S(KC_0));
         }
     } else if (state->count == 2) {
-        // Double tap = }
         tap_code16(S(KC_RBRC));
     }
 }
 
-void td_rprn_reset(tap_dance_state_t *state, void *user_data) {
-    // Nothing to unregister since we use tap_code
-}
+void td_rprn_reset(tap_dance_state_t *state, void *user_data) {}
 
 tap_dance_action_t tap_dance_actions[] = {
     [TD_LPRN] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_lprn_finished, td_lprn_reset),
@@ -66,7 +56,6 @@ tap_dance_action_t tap_dance_actions[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-/* BASE - Layer 0 */
 [_BASE] = LAYOUT(
   S(KC_2),  S(KC_5),  TD(TD_LPRN), TD(TD_RPRN), KC_QUOT, S(KC_BSLS),                KC_DOT,   KC_SCLN,  KC_F5,    KC_F4,    KC_F2,    KC_GRV,
   KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                           KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_EQL,
@@ -75,7 +64,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 KC_LGUI,  KC_RALT,  KC_LALT,  KC_SPC,     KC_BSPC,  KC_SLSH,  S(KC_1),  S(KC_3)
 ),
 
-/* LAYER1 - Simbolos (MO1) */
 [_LAYER1] = LAYOUT(
   KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,    KC_F6,                          KC_F7,    KC_F8,    KC_F9,    KC_F10,   KC_F11,   KC_F12,
   KC_TAB,   KC_NO,    KC_UP,    KC_NO,    KC_NO,    KC_NO,                          S(KC_7),  S(KC_6),  KC_NO,    KC_NO,    KC_NO,    KC_NO,
@@ -84,7 +72,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 KC_NO,    KC_RALT,  KC_LALT,  KC_SPC,     KC_DEL,   KC_NO,    KC_NO,    KC_NO
 ),
 
-/* LAYER2 - FN */
 [_LAYER2] = LAYOUT(
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
@@ -93,7 +80,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 KC_NO,    KC_NO,    KC_NO,    KC_NO,      KC_NO,    KC_NO,    KC_NO,    KC_NO
 ),
 
-/* ADJUST - Layer1 + Layer2 */
 [_ADJUST] = LAYOUT(
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
   KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,                          KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,    KC_NO,
@@ -127,7 +113,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case MC_SENT:
             if (record->event.pressed) {
-                // Shift+Enter - soft line break
                 tap_code16(S(KC_ENT));
             }
             return false;
@@ -136,7 +121,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef OLED_ENABLE
-// Skull animation state
 static uint8_t current_frame = 0;
 static uint32_t anim_timer = 0;
 
@@ -146,8 +130,28 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 static void render_skull(void) {
-    // Update frame every 100ms
-    if (timer_elapsed32(anim_timer) > SKULL_FRAME_DELAY) {
+    uint8_t current_wpm = get_current_wpm();
+    
+    // Si no hay tipeo, mostrar frame 0 estatico
+    if (current_wpm == 0) {
+        oled_write_raw_P(skull_frames[0], SKULL_FRAME_SIZE);
+        return;
+    }
+    
+    // Velocidad de animacion basada en WPM
+    // WPM bajo (10) = 500ms entre frames
+    // WPM alto (100+) = 50ms entre frames
+    uint16_t frame_delay;
+    if (current_wpm < 10) {
+        frame_delay = 500;
+    } else if (current_wpm > 100) {
+        frame_delay = 50;
+    } else {
+        // Interpolacion lineal: 500ms a 10wpm, 50ms a 100wpm
+        frame_delay = 500 - ((current_wpm - 10) * 5);
+    }
+    
+    if (timer_elapsed32(anim_timer) > frame_delay) {
         anim_timer = timer_read32();
         current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
     }
@@ -162,13 +166,17 @@ static void render_status(void) {
         case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
         case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
     }
+    
+    // Mostrar WPM
+    oled_write_P(PSTR("WPM: "), false);
+    oled_write(get_u8_str(get_current_wpm(), ' '), false);
 }
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        render_status();  // Right side: layer info
+        render_status();
     } else {
-        render_skull();   // Left side: skull animation
+        render_skull();
     }
     return false;
 }
