@@ -121,8 +121,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef OLED_ENABLE
-// static uint8_t current_frame = 0;
-// static uint32_t anim_timer = 0;
+static uint8_t current_frame = 0;
+static uint32_t anim_timer = 0;
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (!is_keyboard_master()) return OLED_ROTATION_180;
@@ -130,8 +130,27 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 static void render_skull(void) {
-    // Solo craneo estatico para debug
-    oled_write_raw_P(skull_frames[0], SKULL_FRAME_SIZE);
+    uint8_t current_wpm = get_current_wpm();
+    
+    // Velocidad de animacion basada en WPM
+    uint16_t frame_delay;
+    if (current_wpm == 0) {
+        frame_delay = 0;  // No animar
+    } else if (current_wpm < 10) {
+        frame_delay = 500;
+    } else if (current_wpm > 100) {
+        frame_delay = 50;
+    } else {
+        frame_delay = 500 - ((current_wpm - 10) * 5);
+    }
+    
+    // Actualizar frame si hay tipeo
+    if (current_wpm > 0 && timer_elapsed32(anim_timer) > frame_delay) {
+        anim_timer = timer_read32();
+        current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
+    }
+    
+    oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
 }
 
 /*
