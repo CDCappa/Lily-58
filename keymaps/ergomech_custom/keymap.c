@@ -152,7 +152,13 @@ bool oled_task_user(void) {
             }
         }
         
+        // Dibujar craneo
         oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
+        
+        // WPM como texto simple en la esquina
+        oled_set_cursor(0, 0);
+        oled_write_P(PSTR("WPM:"), false);
+        oled_write(get_u8_str(wpm, ' '), false);
     }
     return false;
 }
