@@ -120,6 +120,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef OLED_ENABLE
+static uint8_t current_frame = 0;
+static uint32_t anim_timer = 0;
+
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
         // Master (derecho): layer info
@@ -131,8 +134,12 @@ bool oled_task_user(void) {
             case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
         }
     } else {
-        // Slave (izquierdo): craneo estatico
-        oled_write_raw_P(skull_frame_0, SKULL_FRAME_SIZE);
+        // Slave (izquierdo): craneo animado
+        if (timer_elapsed32(anim_timer) > 150) {
+            anim_timer = timer_read32();
+            current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
+        }
+        oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
     }
     return false;
 }
