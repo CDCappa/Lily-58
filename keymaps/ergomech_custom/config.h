@@ -6,7 +6,6 @@
 // Tapping term para teclas dual-function
 #define TAPPING_TERM 200
 
-// Split keyboard sync
+// Split keyboard sync - sincroniza estado entre las mitades
 #define SPLIT_LAYER_STATE_ENABLE
 #define SPLIT_WPM_ENABLE
-#define SPLIT_OLED_ENABLE
