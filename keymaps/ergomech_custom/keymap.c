@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "skull_anim.h"
+#include "wpm_graphics.h"
 
 enum layers {
     _BASE = 0,
@@ -123,18 +124,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 static uint8_t current_frame = 0;
 static uint32_t anim_timer = 0;
 
+// Dibujar imagen en posicion especifica
+static void draw_raw_at(const char* data, uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+    for (uint8_t i = 0; i < height / 8; i++) {
+        for (uint8_t j = 0; j < width; j++) {
+            uint8_t byte_idx = i * width + j;
+            uint8_t target_x = x + j;
+            uint8_t target_page = y / 8 + i;
+            if (target_x < 128 && target_page < 4) {
+                oled_write_raw_byte(pgm_read_byte(&data[byte_idx]), target_page * 128 + target_x);
+            }
+        }
+    }
+}
+
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        // Master (derecho): layer info
-        oled_write_P(PSTR("Layer: "), false);
-        switch (get_highest_layer(layer_state)) {
-            case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
-            case _LAYER1:  oled_write_ln_P(PSTR("SYMBOLS"), false); break;
-            case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
-            case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
-        }
-    } else {
-        // Slave (izquierdo): craneo animado segun WPM
+        // Master (derecho): craneo + WPM
         uint8_t wpm = get_current_wpm();
         
         // Solo animar si esta tipeando
@@ -155,10 +161,32 @@ bool oled_task_user(void) {
         // Dibujar craneo
         oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
         
-        // WPM como texto simple en la esquina
-        oled_set_cursor(0, 0);
-        oled_write_P(PSTR("WPM:"), false);
-        oled_write(get_u8_str(wpm, ' '), false);
+        // WPM label
+        draw_raw_at(wpm_label, 128 - WPM_LABEL_WIDTH, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
+        
+        // Numeros WPM
+        uint8_t wpm_copy = wpm;
+        uint8_t y_pos = NUM_HEIGHT * 2;
+        if (wpm_copy == 0) {
+            draw_raw_at(numbers[0], 0, y_pos, NUM_WIDTH, NUM_HEIGHT);
+        } else {
+            while (wpm_copy > 0) {
+                uint8_t digit = wpm_copy % 10;
+                draw_raw_at(numbers[digit], 0, y_pos, NUM_WIDTH, NUM_HEIGHT);
+                if (y_pos < NUM_HEIGHT) break;
+                y_pos -= NUM_HEIGHT;
+                wpm_copy /= 10;
+            }
+        }
+    } else {
+        // Slave (izquierdo): solo layer info simple
+        oled_write_P(PSTR("Layer: "), false);
+        switch (get_highest_layer(layer_state)) {
+            case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
+            case _LAYER1:  oled_write_ln_P(PSTR("SYMBOLS"), false); break;
+            case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
+            case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
+        }
     }
     return false;
 }
