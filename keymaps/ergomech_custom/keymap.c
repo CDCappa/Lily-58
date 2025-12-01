@@ -19,6 +19,8 @@ enum custom_keycodes {
 enum {
     TD_LPRN,
     TD_RPRN,
+    TD_SLSH,
+    TD_ENT,
 };
 
 void td_lprn_finished(tap_dance_state_t *state, void *user_data) {
@@ -49,9 +51,31 @@ void td_rprn_finished(tap_dance_state_t *state, void *user_data) {
 
 void td_rprn_reset(tap_dance_state_t *state, void *user_data) {}
 
+// Tap = /, Double tap = backslash
+void td_slsh_finished(tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1) {
+        tap_code(KC_SLSH);
+    } else if (state->count == 2) {
+        tap_code(KC_BSLS);
+    }
+}
+
+void td_slsh_reset(tap_dance_state_t *state, void *user_data) {}
+
+// Enter solo con hold (previene toques accidentales)
+void td_ent_finished(tap_dance_state_t *state, void *user_data) {
+    if (state->pressed) {
+        tap_code(KC_ENT);
+    }
+}
+
+void td_ent_reset(tap_dance_state_t *state, void *user_data) {}
+
 tap_dance_action_t tap_dance_actions[] = {
     [TD_LPRN] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_lprn_finished, td_lprn_reset),
     [TD_RPRN] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_rprn_finished, td_rprn_reset),
+    [TD_SLSH] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_slsh_finished, td_slsh_reset),
+    [TD_ENT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_ent_finished, td_ent_reset),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -60,8 +84,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   S(KC_2),  S(KC_5),  TD(TD_LPRN), TD(TD_RPRN), KC_QUOT, S(KC_BSLS),                KC_DOT,   KC_SCLN,  KC_F5,    KC_F4,    KC_F2,    KC_GRV,
   KC_TAB,   KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,                           KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_EQL,
   KC_LCTL,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,                           KC_H,     KC_J,     KC_K,     KC_L,     KC_COMM,  KC_MINS,
-  KC_LSFT,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_ENT,     KC_ESC,   KC_N,     KC_M,     MC_ENE,   S(KC_7),  MO(1),    S(KC_8),
-                                KC_LGUI,  KC_RALT,  KC_LALT,  KC_SPC,     KC_BSPC,  KC_SLSH,  S(KC_1),  S(KC_3)
+  KC_LSFT,  KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     TD(TD_ENT), KC_ESC,   KC_N,     KC_M,     MC_ENE,   S(KC_7),  MO(1),    S(KC_8),
+                                KC_LGUI,  KC_RALT,  KC_LALT,  KC_SPC,     KC_BSPC,  TD(TD_SLSH), S(KC_1), S(KC_3)
 ),
 
 [_LAYER1] = LAYOUT(
@@ -124,7 +148,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 static uint8_t current_frame = 0;
 static uint32_t anim_timer = 0;
 
-// Dibujar imagen en posicion especifica
 static void draw_raw_at(const char* data, uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
     for (uint8_t i = 0; i < height / 8; i++) {
         for (uint8_t j = 0; j < width; j++) {
@@ -140,10 +163,8 @@ static void draw_raw_at(const char* data, uint8_t x, uint8_t y, uint8_t width, u
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        // Master (derecho): craneo + WPM
         uint8_t wpm = get_current_wpm();
-        
-        // Solo animar si esta tipeando
+
         if (wpm > 0) {
             uint16_t frame_delay;
             if (wpm > 80) {
@@ -151,20 +172,16 @@ bool oled_task_user(void) {
             } else {
                 frame_delay = 500 - (wpm * 5);
             }
-            
+
             if (timer_elapsed32(anim_timer) > frame_delay) {
                 anim_timer = timer_read32();
                 current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
             }
         }
-        
-        // Dibujar craneo
+
         oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
-        
-        // WPM label
         draw_raw_at(wpm_label, 128 - WPM_LABEL_WIDTH, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
-        
-        // Numeros WPM
+
         uint8_t wpm_copy = wpm;
         uint8_t y_pos = NUM_HEIGHT * 2;
         if (wpm_copy == 0) {
@@ -179,7 +196,6 @@ bool oled_task_user(void) {
             }
         }
     } else {
-        // Slave (izquierdo): solo layer info simple
         oled_write_P(PSTR("Layer: "), false);
         switch (get_highest_layer(layer_state)) {
             case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
