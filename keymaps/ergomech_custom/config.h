@@ -1,7 +1,8 @@
 #pragma once
 
-// Lado master: derecho (donde conectas el USB)
-#define MASTER_RIGHT
+// Handedness se define via bootloader (uf2-split-left / uf2-split-right)
+// que graba en EEPROM cual lado es cada modulo
+#define EE_HANDS
 
 // Tapping term para teclas dual-function
 #define TAPPING_TERM 200

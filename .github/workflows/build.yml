@@ -28,14 +28,28 @@ jobs:
         mkdir -p qmk_firmware/keyboards/lily58/keymaps/ergomech_custom
         cp -r keymaps/ergomech_custom/* qmk_firmware/keyboards/lily58/keymaps/ergomech_custom/
 
-    - name: Build firmware for RP2040
+    - name: Build firmware for LEFT side (slave)
       run: |
         cd qmk_firmware
-        qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce
+        qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce -bl uf2-split-left
+        mv *.uf2 lily58_LEFT.uf2
 
-    - name: Upload firmware
+    - name: Build firmware for RIGHT side (master)
+      run: |
+        cd qmk_firmware
+        qmk compile -kb lily58/rev1 -km ergomech_custom -e CONVERT_TO=rp2040_ce -bl uf2-split-right
+        mv *.uf2 lily58_RIGHT.uf2
+
+    - name: Upload LEFT firmware
       uses: actions/upload-artifact@v4
       with:
-        name: lily58-firmware
-        path: qmk_firmware/*.uf2
+        name: lily58-LEFT-flash-to-left-module
+        path: qmk_firmware/lily58_LEFT.uf2
+        if-no-files-found: error
+
+    - name: Upload RIGHT firmware
+      uses: actions/upload-artifact@v4
+      with:
+        name: lily58-RIGHT-flash-to-right-module
+        path: qmk_firmware/lily58_RIGHT.uf2
         if-no-files-found: error
