@@ -1,5 +1,5 @@
-# Habilitar OLED
-OLED_ENABLE = yes
+# OLED deshabilitado temporalmente para diagnostico
+OLED_ENABLE = no
 
 # Tap Dance
 TAP_DANCE_ENABLE = yes
@@ -7,8 +7,5 @@ TAP_DANCE_ENABLE = yes
 # Optimizacion de tamanio
 LTO_ENABLE = yes
 
-# Si tienes LEDs RGB, descomenta:
-# RGBLIGHT_ENABLE = yes
-
-# WPM tracking para animacion
-WPM_ENABLE = yes
+# WPM deshabilitado (solo se usa para OLED)
+WPM_ENABLE = no
