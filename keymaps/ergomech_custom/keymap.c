@@ -175,11 +175,11 @@ static void render_skull(void) {
     
     // Dibujar digitos de derecha a izquierda
     if (wpm == 0) {
-        draw_raw_at(numbers[0], x_pos, 4, NUM_WIDTH, NUM_HEIGHT);
+        draw_raw_at(numbers[0], x_pos, 4, NUM_WIDTH, 16);
     } else {
         while (wpm > 0 && x_pos >= (128 - NUM_WIDTH * 3)) {
             uint8_t digit = wpm % 10;
-            draw_raw_at(numbers[digit], x_pos, 4, NUM_WIDTH, NUM_HEIGHT);
+            draw_raw_at(numbers[digit], x_pos, 4, NUM_WIDTH, 16);
             x_pos -= NUM_WIDTH;
             wpm /= 10;
         }
