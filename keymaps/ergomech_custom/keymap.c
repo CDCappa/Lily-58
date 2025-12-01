@@ -170,17 +170,19 @@ static void render_skull(void) {
     draw_raw_at(wpm_label, 0, 0, WPM_LABEL_WIDTH, WPM_LABEL_HEIGHT);
     
     // Numeros a la derecha (abajo en visual vertical)
+    // Los numeros van apilados verticalmente (en la pantalla rotada)
     uint8_t wpm = current_wpm;
-    uint8_t x_pos = 128 - NUM_WIDTH;  // Empezar desde la derecha
+    uint8_t y_pos = 32 - NUM_HEIGHT;  // Empezar desde abajo
+    uint8_t x_num = 128 - NUM_WIDTH;  // Posicion X fija a la derecha
     
-    // Dibujar digitos de derecha a izquierda
+    // Dibujar digitos de abajo a arriba
     if (wpm == 0) {
-        draw_raw_at(numbers[0], x_pos, 4, NUM_WIDTH, 16);
+        draw_raw_at(numbers[0], x_num, y_pos, NUM_WIDTH, NUM_HEIGHT);
     } else {
-        while (wpm > 0 && x_pos >= (128 - NUM_WIDTH * 3)) {
+        while (wpm > 0 && y_pos >= 0) {
             uint8_t digit = wpm % 10;
-            draw_raw_at(numbers[digit], x_pos, 4, NUM_WIDTH, 16);
-            x_pos -= NUM_WIDTH;
+            draw_raw_at(numbers[digit], x_num, y_pos, NUM_WIDTH, NUM_HEIGHT);
+            y_pos -= NUM_HEIGHT;
             wpm /= 10;
         }
     }
