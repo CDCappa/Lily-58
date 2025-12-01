@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "skull_anim.h"
 
 enum layers {
     _BASE = 0,
@@ -135,18 +136,39 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef OLED_ENABLE
+// Skull animation state
+static uint8_t current_frame = 0;
+static uint32_t anim_timer = 0;
+
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (!is_keyboard_master()) return OLED_ROTATION_180;
     return rotation;
 }
 
-bool oled_task_user(void) {
+static void render_skull(void) {
+    // Update frame every 100ms
+    if (timer_elapsed32(anim_timer) > SKULL_FRAME_DELAY) {
+        anim_timer = timer_read32();
+        current_frame = (current_frame + 1) % SKULL_FRAME_COUNT;
+    }
+    oled_write_raw_P(skull_frames[current_frame], SKULL_FRAME_SIZE);
+}
+
+static void render_status(void) {
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
         case _BASE:    oled_write_ln_P(PSTR("BASE"), false); break;
         case _LAYER1:  oled_write_ln_P(PSTR("SYMBOLS"), false); break;
         case _LAYER2:  oled_write_ln_P(PSTR("FN/NAV"), false); break;
         case _ADJUST:  oled_write_ln_P(PSTR("ADJUST"), false); break;
+    }
+}
+
+bool oled_task_user(void) {
+    if (is_keyboard_master()) {
+        render_status();  // Right side: layer info
+    } else {
+        render_skull();   // Left side: skull animation
     }
     return false;
 }
